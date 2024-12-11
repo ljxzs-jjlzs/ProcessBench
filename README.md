@@ -1,6 +1,6 @@
 # ProcessBench
 
-📄 [**[paper]**](https://huggingface.co/papers/2412.06559) 🤗 [**[dataset]**](https://huggingface.co/datasets/Qwen/ProcessBench)
+📄 [**[paper]**](https://huggingface.co/papers/2412.06559) 🤗 [**[data]**](https://huggingface.co/datasets/Qwen/ProcessBench)
 
 This is the official repository for paper "**ProcessBench: Identifying Process Errors in Mathematical Reasoning**"
 
@@ -20,7 +20,7 @@ If you find this work relevant or helpful to your work, please kindly cite us:
 
 ## News
 
-* **[12/11/2024]** Released the evaluation [**code**](./code) and the [**dataset**](https://huggingface.co/datasets/Qwen/ProcessBench) on HuggingFace 
+* **[12/11/2024]** Released the evaluation [**code**](./code) and the [**data**](https://huggingface.co/datasets/Qwen/ProcessBench) on HuggingFace 
 * **[12/10/2024]** Released the [**paper**](https://huggingface.co/papers/2412.06559) on arXiv
 
 ## Data Usage
@@ -52,4 +52,4 @@ print(json.dumps(dataset[0], indent=2))
 
 ## Evaluation
 
-You can refer to the [code](./code) folder for the evaluation code and the prompt templates we use in this work.
+You can refer to the [code](./code) folder for the evaluation code and the prompt templates we use in this work
