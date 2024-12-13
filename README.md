@@ -20,12 +20,13 @@ If you find this work relevant or helpful to your work, please kindly cite us:
 
 ## News
 
+* **[12/13/2024]** Released the evaluation [code](./code/run_eval_prm_rlhflow.py) for the RLHFlow PRMs
 * **[12/11/2024]** Released the evaluation [**code**](./code) and the [**data**](https://huggingface.co/datasets/Qwen/ProcessBench) on HuggingFace 
 * **[12/10/2024]** Released the [**paper**](https://huggingface.co/papers/2412.06559) on arXiv
 
 ## Data Usage
 
-You can use the following code to preview the dataset:
+You can use the following code to preview the ProcessBench data:
 
 ```python
 import json
