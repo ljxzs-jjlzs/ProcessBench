@@ -123,6 +123,11 @@ def main():
         with open(os.path.join(output_dir, f'{config}_correct.jsonl'), 'w') as f:
             for e in correct_data:
                 f.write(json.dumps(e) + '\n')
+        
+        acc1 = np.mean([e['match'] for e in error_data]) * 100
+        acc2 = np.mean([e['match'] for e in correct_data]) * 100
+        f1 = 2 * acc1 * acc2 / (acc1 + acc2)
+        print(f'{config} error acc: {acc1:.1f}, correct acc: {acc2:.1f}, f1: {f1:.1f}')
 
 
 if __name__ == '__main__':

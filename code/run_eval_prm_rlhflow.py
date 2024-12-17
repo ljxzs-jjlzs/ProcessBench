@@ -17,6 +17,7 @@ Then you can run the following script to evaluate the model.
 """
 
 import os
+import numpy as np
 import json
 from tqdm import tqdm
 from multiprocessing import Pool
@@ -74,6 +75,11 @@ def main():
         with open(f'outputs/Llama3.1-8B-PRM-Mistral-Data/{config}_correct.jsonl', 'w') as f:
             for e in data2:
                 f.write(json.dumps(e) + '\n')
+        
+        acc1 = np.mean([e['match'] for e in data1]) * 100
+        acc2 = np.mean([e['match'] for e in data2]) * 100
+        f1 = 2 * acc1 * acc2 / (acc1 + acc2)
+        print(f'{config} error acc: {acc1:.1f}, correct acc: {acc2:.1f}, f1: {f1:.1f}')
 
 if __name__ == '__main__':
     main()
