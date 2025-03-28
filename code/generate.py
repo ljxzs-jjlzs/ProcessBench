@@ -9,13 +9,6 @@ from transformers import AutoTokenizer
 from datasets import load_dataset
 import re
 
-def extract_answer(solution_text: str):
-    boxed_pattern = r'\\boxed\{([^}]*)\}'
-    matches = re.findall(boxed_pattern, solution_text)
-    if matches:
-        return matches[-1].strip()
-    return None
-
 def apply_chat_template(toker, messages):
     input_prompt = toker.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
     return toker(input_prompt, add_special_tokens=False).input_ids
@@ -46,7 +39,6 @@ def main():
     toker = AutoTokenizer.from_pretrained(args.model_path)
     TEMPLATE = open('./templates/critique_template.txt').read().strip()
 
-
     llm = LLM(
         model=args.model_path, tokenizer=args.model_path,
         gpu_memory_utilization=0.95,
@@ -54,6 +46,7 @@ def main():
         enable_prefix_caching=True, swap_space=16,
         max_num_seqs=20,
     )
+
     if not args.use_voting:
         sampling_params = SamplingParams(temperature=0.,
                                          max_tokens=32768 if 'QwQ' in args.model_path else 8192, seed=42)
@@ -64,7 +57,6 @@ def main():
         else:
             sampling_params = SamplingParams(temperature=1, top_p=0.9, n=args.voting_n,
                                             max_tokens=32768 if 'QwQ' in args.model_path else 8192, seed=42)
-
 
     if args.configs is None:
         args.configs = ['gsm8k', 'math', 'olympiadbench', 'omnimath']
@@ -82,53 +74,24 @@ def main():
 
         generations = llm.generate(prompt_token_ids=prompt_token_ids, sampling_params=sampling_params)
 
-
         res_data = []
         for i in range(len(input_data)):
             d = input_data[i].copy()
-
+            # 增加唯一 id 字段（可以根据需要自定义生成方式，这里直接使用索引）
+            d["id"] = f"{config}_{i}"
             if not args.use_voting:
                 generated_critique = generations[i].outputs[0].text
-                pred = extract_answer(generated_critique)
-                try:
-                    pred = int(pred)
-                except:
-                    pred = None
             else:
                 generated_critique = [ee.text for ee in generations[i].outputs]
-                preds = [extract_answer(e) for e in generated_critique]
-                preds = [e for e in preds if e is not None]
-                if len(preds) == 0:
-                    pred = None
-                else:
-                    pred = Counter(preds).most_common(1)[0][0]
-                    try:
-                        pred = int(pred)
-                    except:
-                        pred = None
-
             d['generated_critique'] = generated_critique
-            d['prediction'] = pred
-            d['match'] = (pred == d['label'])
-
             res_data.append(d)
 
-
-        error_data = [e for e in res_data if e['label'] != -1]
-        correct_data = [e for e in res_data if e['label'] == -1]
-
-        with open(os.path.join(output_dir, f'{config}_error.jsonl'), 'w') as f:
-            for e in error_data:
-                f.write(json.dumps(e) + '\n')
-        with open(os.path.join(output_dir, f'{config}_correct.jsonl'), 'w') as f:
-            for e in correct_data:
-                f.write(json.dumps(e) + '\n')
-        
-        acc1 = np.mean([e['match'] for e in error_data]) * 100
-        acc2 = np.mean([e['match'] for e in correct_data]) * 100
-        f1 = 2 * acc1 * acc2 / (acc1 + acc2)
-        print(f'{config} error acc: {acc1:.1f}, correct acc: {acc2:.1f}, f1: {f1:.1f}')
-
+        # 将生成结果保存到文件（JSONL 格式）
+        output_file = os.path.join(output_dir, f"{config}_generation.jsonl")
+        with open(output_file, 'w', encoding='utf-8') as f:
+            for e in res_data:
+                f.write(json.dumps(e, ensure_ascii=False) + "\n")
+        print(f"生成结果已保存：{output_file}")
 
 if __name__ == '__main__':
     main()
