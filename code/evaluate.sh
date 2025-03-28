@@ -1,5 +1,6 @@
 
-cd "$(dirname "$0")"
+work_dir="" # 就是当前这个code文件夹路径，例如/home/nfs05/liujx/GithubRepos/ProcessBench/code
+cd ${work_dir}
 model_path=""
 model_name=$(basename "$model_path")
 
