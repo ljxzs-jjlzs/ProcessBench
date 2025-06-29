@@ -49,7 +49,7 @@ def main():
 
     llm = LLM(
         model=args.model_path, tokenizer=args.model_path,
-        gpu_memory_utilization=0.95,
+        gpu_memory_utilization=1.0,
         tensor_parallel_size=torch.cuda.device_count(),
         enable_prefix_caching=True, swap_space=16,
         max_num_seqs=20,

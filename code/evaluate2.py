@@ -24,13 +24,14 @@ def main():
                         help="生成结果的文件路径（JSONL 格式，每行包含一个样本信息，样本中需包含 config 字段）")
     parser.add_argument('--configs', type=str, required=True,
                         help="待评测的配置名称，例如: gsm8k 或 math")
+    parser.add_argument("--tokenizer_path", type=str, default=None)
     parser.add_argument('--output_dir', type=str, default='./outputs',
                         help="测试结果保存的目录")
     args = parser.parse_args()
 
     # 固定评测使用的 critique 数量列表
-    numbers = [1, 2, 4, 8, 16, 32]
-
+    numbers = [1, 2, 4, 8, 10, 16]
+    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_path)
     # 读取生成结果文件
     with open(args.input_file, 'r', encoding='utf-8') as f:
         all_data = [json.loads(line) for line in f]
@@ -39,6 +40,7 @@ def main():
     eval_results = {}
 
     for num in numbers:
+        token_numbers = 0
         res_data = []
         for d in all_data:
             # 为避免多次修改同一条数据，这里复制一份
@@ -50,6 +52,7 @@ def main():
                 # 如果生成结果为列表，则取前 num 个进行评估
                 if isinstance(generated, list):
                     subset = generated[:num]
+                    token_numbers += sum([len(tokenizer.encode(e)) for e in subset])
                     preds = [extract_answer(e) for e in subset]
                     preds = [e for e in preds if e is not None]
                     if preds:
@@ -62,6 +65,7 @@ def main():
                         d_new["prediction"] = None
                 else:
                     pred = extract_answer(generated)
+                    token_numbers += len(tokenizer.encode(generated))
                     try:
                         d_new["prediction"] = int(pred)
                     except Exception:
@@ -82,9 +86,10 @@ def main():
         eval_results[str(num)] = {
             "error_acc": round(acc1, 1),
             "correct_acc": round(acc2, 1),
-            "f1": round(f1, 1)
+            "f1": round(f1, 1),
+            "average_token_numbers": round(token_numbers/len(all_data), 1)
         }
-        print(f'{args.configs} using first {num} critique(s) -> error acc: {acc1:.1f}%, correct acc: {acc2:.1f}%, f1: {f1:.1f}%')
+        print(f'{args.configs} using first {num} critique(s) -> error acc: {acc1:.1f}%, correct acc: {acc2:.1f}%, f1: {f1:.1f}%, average token numbers: {token_numbers/len(all_data):.1f}')
 
     # 创建输出目录并存储评测结果为 JSON 文件
     os.makedirs(args.output_dir, exist_ok=True)

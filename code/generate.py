@@ -32,6 +32,7 @@ def main():
     parser.add_argument("--output_dir", type=str, default='./outputs')
     parser.add_argument('--use_voting', action='store_true')
     parser.add_argument('--voting_n', type=int, default=8)
+    parser.add_argument('--tensor_parallel_size', type=int, default=4)
     args = parser.parse_args()
 
     args.model_name = os.path.basename(args.model_path)
@@ -42,7 +43,7 @@ def main():
     llm = LLM(
         model=args.model_path, tokenizer=args.model_path,
         gpu_memory_utilization=0.95,
-        tensor_parallel_size=torch.cuda.device_count(),
+        tensor_parallel_size=args.tensor_parallel_size,
         enable_prefix_caching=True, swap_space=16,
         max_num_seqs=20,
     )
@@ -54,9 +55,13 @@ def main():
         if 'Qwen2.5-Math' in args.model_path: # to ensure normal generation of Qwen2.5-Math-7B/72B-Instruct
             sampling_params = SamplingParams(temperature=0.7, top_p=0.8, top_k=20, n=args.voting_n,
                                             max_tokens=32768 if 'QwQ' in args.model_path else 8192, seed=42)
+        elif "deepseek-r1" in args.model_path.lower() or "qwen3" in args.model_path.lower():
+            sampling_params = SamplingParams(temperature=0.7, top_p=0.8, top_k=20, n=args.voting_n,
+                                            max_tokens=32768, seed=42)
         else:
             sampling_params = SamplingParams(temperature=1, top_p=0.9, n=args.voting_n,
                                             max_tokens=32768 if 'QwQ' in args.model_path else 8192, seed=42)
+    
 
     if args.configs is None:
         args.configs = ['gsm8k', 'math', 'olympiadbench', 'omnimath']
