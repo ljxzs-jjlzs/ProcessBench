@@ -1,10 +1,11 @@
 work_dir="/home/nfs05/liujx/GithubRepos/ProcessBench/code"
-output_path="/home/nfs05/liujx/GithubRepos/ProcessBench/code/outputs/RPRM/Qwen2.5-0.5B-Instruct/gsm8k"
+output_dir="/home/nfs05/liujx/GithubRepos/ProcessBench/code/outputs/RPRM/Qwen2.5-0.5B-Instruct"
 cd ${work_dir}
 model_path="/home/nfs05/model/Qwen2.5-0.5B-Instruct"
 config=gsm8k
 model_name=$(basename $model_path)
 echo $model_name
+output_path=$output_dir/$config
 
 python generate-rprm.py \
     --model_path $model_path \
